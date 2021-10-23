@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+
+</head>
+<body>
+<iframe>
+
+</iframe>
+<img src="images/下载.jpeg" id="refer">
+<script src="js/face-api.js"></script>
+<h1><a href="人脸比对.html">人脸比对</a></h1>
+<script>
+    let age = null;
+    let gender = null;
+    const video = document.getElementById("refer");
+    Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
+        faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
+        faceapi.nets.faceRecognitionNet.loadFromUri("./models"),
+        faceapi.nets.faceExpressionNet.loadFromUri("./models"),
+        faceapi.nets.ageGenderNet.loadFromUri("./models"),
+    ]).then(query);
+
+    async function query() {
+        const detections = await faceapi
+            .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceExpressions()
+            .withAgeAndGender()
+        ;
+        console.log(detections);
+        age = detections[0].age;
+        gender = detections[0].gender;
+        let emotionKeys = ["neutral", "happy", "sad", "angry", "fearful", "disgusted", "surprised"];
+        let emotionValues = [detections[0].expressions.neutral,
+            detections[0].expressions.happy,
+            detections[0].expressions.sad,
+            detections[0].expressions.angry,
+            detections[0].expressions.fearful,
+            detections[0].expressions.disgusted,
+            detections[0].expressions.surprised];
+        console.log(detections[0].expressions.neutral);
+        console.log(detections[0].expressions.happy);
+        console.log(detections[0].expressions.sad);
+        console.log(detections[0].expressions.angry);
+        console.log(detections[0].expressions.fearful);
+        console.log(detections[0].expressions.disgusted);
+        console.log(detections[0].expressions.surprised);
+        let maxArr = emotionValues[0];
+        let max = 0;
+        for (let i = 0; i < emotionValues.length - 1; i++) {
+            if (maxArr < emotionValues[i + 1]) {
+                maxArr = emotionValues[i + 1];
+            } else {
+                maxArr = maxArr;
+            }
+        }
+        for (let i = 0; i < emotionValues.length; i++) {
+            if (emotionValues[i] == maxArr)
+                max = i;
+        }
+        console.log(max);
+        console.log("表情是：" + emotionKeys[max]);
+        console.log("表情程度是：" + emotionValues[max]);
+        console.log("年龄是：" + age);
+        console.log("性别是：" + gender);
+        console.log("===============");
+    }
+
+</script>
+</body>
+</html>

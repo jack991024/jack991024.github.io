@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="js/face-api.js"></script>
+</head>
+<body>
+<img src="images/reference.jpeg" id="refer">
+<img src="images/query.jpeg" id="query">
+<video id="video" width="720" height="500" autoplay muted></video>
+<script>
+    const referF = document.getElementById("refer");
+    const queryF = document.getElementById("query");
+
+    Promise.all([
+        faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
+        faceapi.nets.faceRecognitionNet.loadFromUri("./models"),
+        faceapi.nets.ssdMobilenetv1.loadFromUri('./models')
+    ]).then(query);
+
+
+    async function query() {
+        const results = await faceapi
+            .detectAllFaces(referF)
+            .withFaceLandmarks()
+            .withFaceDescriptors()
+
+        const faceMatcher = new faceapi.FaceMatcher(results)
+
+        const singleResult = await faceapi
+            .detectSingleFace(queryF)
+            .withFaceLandmarks()
+            .withFaceDescriptor()
+
+        if (singleResult) {
+            const bestMatch = faceMatcher.findBestMatch(singleResult.descriptor)
+            console.log(bestMatch)
+            let bm=parseFloat(bestMatch.distance)
+            if ( bm<= 0.50) {
+                console.log("两张图片是同一个人脸")
+                console.log(bestMatch.toString())
+            }
+        }
+    }
+</script>
+</body>
+</html>
